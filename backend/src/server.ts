@@ -146,12 +146,8 @@ const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
     try {
-        await redisClient.connect().catch(() => {
-            console.warn("⚠️ Redis no dey! Falling back to DB only. No wahala.");
-        });
-
         const listen = (port: number | string) => {
-            server.listen(port)
+            const s = server.listen(port)
                 .on('error', (err: any) => {
                     if (err.code === 'EADDRINUSE') {
                         console.log(`⚠️ Port ${port} occupied. Trying ${Number(port) + 1}...`);
@@ -163,10 +159,18 @@ const startServer = async () => {
                 .on('listening', () => {
                     console.log(`========================================`);
                     console.log(`🔥 NAIJA PLAY SERVER READY!`);
-                    console.log(`Compound dey live for port: ${server.address() && typeof server.address() !== 'string' ? (server.address() as any).port : port}`);
+                    console.log(`Compound dey live for port: ${port}`);
                     console.log(`========================================`);
                 });
         };
+
+        // --- 1. Bind Port Immediately (Crucial for Render Health Check) ---
+        listen(PORT);
+
+        // --- 2. Background Connections (Non-blocking) ---
+        redisClient.connect()
+            .then(() => console.log("✅ Redis connected - Real-time features ready."))
+            .catch(() => console.warn("⚠️ Redis connection failed. Real-time features fit burst."));
 
         const initAdmin = async () => {
             const adminEmail = 'Mofosgang123@gmail.com';
@@ -191,13 +195,20 @@ const startServer = async () => {
         };
 
         await initAdmin();
-
-        listen(PORT);
     } catch (error) {
         console.error("Omo, something burst for server start:", error);
     }
 };
 
 startServer();
+
+// --- GRACEFUL SHUTDOWN ---
+process.on('SIGTERM', () => {
+    console.log('SIGTERM signal received: closing server');
+    server.close(() => {
+        console.log('Server closed');
+        process.exit(0);
+    });
+});
 
 export { prisma, redisClient, io };

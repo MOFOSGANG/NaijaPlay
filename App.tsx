@@ -163,17 +163,29 @@ const Header = ({ isLoggedIn, setShowAuthModal }: { isLoggedIn: boolean; setShow
         <span className="text-2xl font-black font-accent text-[#008751] tracking-tighter cursor-pointer" onClick={() => setView('LANDING')}>NAIJA PLAY</span>
         <RadioPlayer />
       </div>
+
       <div className="flex items-center gap-4">
-        <div className="hidden md:flex flex-col items-end">
-          <span className="text-[9px] font-black text-[#00ff88] uppercase tracking-widest">{user.title}</span>
-          <span className="text-xs font-bold">{user.username}</span>
-        </div>
-        <button
-          onClick={() => isLoggedIn ? setView('PROFILE') : setShowAuthModal(true)}
-          className="w-10 h-10 rounded-full bg-[#008751] flex items-center justify-center border-2 border-[#00ff88]"
-        >
-          {user.avatar}
-        </button>
+        {isLoggedIn && user ? (
+          <>
+            <div className="hidden md:flex flex-col items-end">
+              <span className="text-[9px] font-black text-[#00ff88] uppercase tracking-widest">{user.title}</span>
+              <span className="text-xs font-bold">{user.username}</span>
+            </div>
+            <button
+              onClick={() => setView('PROFILE')}
+              className="w-10 h-10 rounded-full bg-[#008751] flex items-center justify-center border-2 border-[#00ff88]"
+            >
+              {user.avatar}
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={() => setShowAuthModal(true)}
+            className="px-6 py-2 bg-[#008751] rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
+          >
+            Sign In
+          </button>
+        )}
       </div>
     </header>
   );
@@ -181,6 +193,7 @@ const Header = ({ isLoggedIn, setShowAuthModal }: { isLoggedIn: boolean; setShow
 
 const VillageView = ({ hideTitle = false }: { hideTitle?: boolean }) => {
   const { user, joinVillage } = useGameStore();
+  if (!user) return null;
   return (
     <div className="space-y-6">
       {!hideTitle && (
@@ -191,7 +204,7 @@ const VillageView = ({ hideTitle = false }: { hideTitle?: boolean }) => {
       )}
       <div className="grid grid-cols-1 gap-4">
         {VILLAGES.map(v => (
-          <div key={v.id} className={`glass p-5 rounded-[30px] border transition-all ${user.villageId === v.id ? 'border-[#00ff88] bg-[#00ff88]/5 scale-[1.02]' : 'border-white/5 opacity-80'}`}>
+          <div key={v.id} className={`glass p-5 rounded-[30px] border transition-all ${user?.villageId === v.id ? 'border-[#00ff88] bg-[#00ff88]/5 scale-[1.02]' : 'border-white/5 opacity-80'}`}>
             <div className="flex items-center gap-4">
               <div className="text-4xl">{v.icon}</div>
               <div className="flex-grow">
@@ -223,6 +236,8 @@ const VillageView = ({ hideTitle = false }: { hideTitle?: boolean }) => {
 const Dashboard = ({ onShowLobbies }: { onShowLobbies?: () => void }) => {
   const { user, setView, dailyQuests } = useGameStore();
   const { isConnected, onlinePlayerCount, joinQueue } = useMultiplayerStore();
+
+  if (!user) return null;
 
   const handleQuickPlay = (gameId: GameType) => {
     if (gameId === 'NPAT') {
@@ -316,8 +331,11 @@ const Dashboard = ({ onShowLobbies }: { onShowLobbies?: () => void }) => {
 const LandingPage = ({ isLoggedIn, setShowAuthModal }: { isLoggedIn: boolean; setShowAuthModal: (v: boolean) => void }) => {
   const { setView, setLoading } = useGameStore();
   const handleStart = () => {
-    setLoading(true);
-    setTimeout(() => { setLoading(false); setView('DASHBOARD'); }, 3000);
+    if (isLoggedIn) {
+      setView('DASHBOARD');
+    } else {
+      setShowAuthModal(true);
+    }
   };
   return (
     <div className="flex flex-col items-center pt-20 pb-40 px-6 text-center">
@@ -346,8 +364,10 @@ const LandingPage = ({ isLoggedIn, setShowAuthModal }: { isLoggedIn: boolean; se
   );
 };
 
-const MarketPage = () => {
+const Market = () => {
   const { user, buyItem } = useGameStore();
+
+  if (!user) return null;
   const [activeCategory, setActiveCategory] = useState<'ALL' | 'SKIN' | 'OUTFIT' | 'EMOTE' | 'THEME'>('ALL');
 
   const filteredItems = SHOP_ITEMS.filter(item =>
@@ -462,8 +482,10 @@ const MarketPage = () => {
 const ProfilePage = () => {
   const { user, updateProfile, logout } = useGameStore();
   const [isEditing, setIsEditing] = useState(false);
-  const [editBio, setEditBio] = useState(user.bio || '');
-  const [editUsername, setEditUsername] = useState(user.username);
+  const [editBio, setEditBio] = useState(user?.bio || '');
+  const [editUsername, setEditUsername] = useState(user?.username || '');
+
+  if (!user) return null;
 
   const totalGamesPlayed = Object.values(user.stats).reduce((acc, s) => acc + s.played, 0);
   const totalWins = Object.values(user.stats).reduce((acc, s) => acc + s.wins, 0);
@@ -1077,6 +1099,13 @@ const AppContent = () => {
       connect(user.id);
     }
   }, [user.id, connect]);
+
+  // Force Landing if not logged in and trying to access protected views
+  useEffect(() => {
+    if (!isLoggedIn && currentView !== 'LANDING') {
+      setView('LANDING');
+    }
+  }, [isLoggedIn, currentView, setView]);
 
   // Update Source when track changes
   useEffect(() => {

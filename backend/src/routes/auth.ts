@@ -44,16 +44,23 @@ router.post('/register', async (req, res) => {
         res.json({ message: "Welcome to the Street! 🏃", token, user: userData });
     } catch (error: any) {
         if (error.code === 'P2002') {
-            const target = error.meta?.target || [];
-            if (target.includes('username')) {
+            const target = error.meta?.target;
+            // Handle both array and string formats of target
+            const isUsername = Array.isArray(target) ? target.includes('username') : target === 'username';
+            const isEmail = Array.isArray(target) ? target.includes('email') : target === 'email';
+
+            if (isUsername) {
                 return res.status(400).json({ error: "Username don take by another person! 😩" });
             }
-            if (target.includes('email')) {
+            if (isEmail) {
                 return res.status(400).json({ error: "Email don register already! 📧" });
             }
+
+            // Fallback for P2002 if target is unclear
+            return res.status(400).json({ error: "Username or Email already dey in the street! 🏾" });
         }
-        console.error("REGISTER ERROR:", error);
-        res.status(400).json({ error: "Something burst for our end! Try again. 🏾" });
+        console.error("REGISTER ERROR COMPLETE:", error);
+        res.status(500).json({ error: "Something burst for our end! Try again later. 🏾" });
     }
 });
 

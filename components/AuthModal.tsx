@@ -127,28 +127,28 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
                         initial={{ scale: 0.9, opacity: 0, y: 20 }}
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                        className="relative w-full max-w-md glass rounded-[40px] border border-white/10 overflow-hidden shadow-2xl"
+                        className="relative w-full max-w-sm glass rounded-[35px] border border-white/10 overflow-hidden shadow-2xl p-8"
                     >
-                        {/* Header Decoration */}
-                        <div className="h-32 bg-[#008751] relative flex items-center justify-center">
-                            <div className="ankara-pattern opacity-20" />
-                            <div className="relative z-10 flex flex-col items-center">
-                                <div className="w-16 h-16 bg-white/20 rounded-2xl backdrop-blur-md flex items-center justify-center text-3xl mb-2 border border-white/20">
-                                    {mode === 'SIGNUP' ? '👋' : (mode === 'RECOVER' || mode === 'VERIFY' || mode === 'RESET') ? '🔑' : '🔥'}
-                                </div>
-                                <h2 className="text-2xl font-black font-accent text-white uppercase tracking-tighter text-center">
-                                    {mode === 'SIGNUP' ? 'Join the Street' : mode === 'RECOVER' ? 'Account Recovery' : mode === 'VERIFY' ? 'Check your Street' : mode === 'RESET' ? 'New Identity' : 'Welcome Back'}
-                                </h2>
+                        <button
+                            onClick={onClose}
+                            className="absolute top-4 right-4 p-2 bg-white/5 rounded-full text-white/40 hover:text-white transition-all"
+                        >
+                            <X size={18} />
+                        </button>
+
+                        <div className="flex flex-col items-center mb-8">
+                            <div className="w-14 h-14 bg-[#008751]/20 rounded-2xl flex items-center justify-center text-2xl mb-4 border border-[#008751]/20">
+                                {mode === 'SIGNUP' ? '👋' : (mode === 'RECOVER' || mode === 'VERIFY' || mode === 'RESET') ? '🔑' : '🔥'}
                             </div>
-                            <button
-                                onClick={onClose}
-                                className="absolute top-6 right-6 p-2 bg-black/20 rounded-full text-white/60 hover:text-white transition-all"
-                            >
-                                <X size={20} />
-                            </button>
+                            <h2 className="text-xl font-black font-accent text-white uppercase tracking-tight text-center">
+                                {mode === 'SIGNUP' ? 'Join the Street' : mode === 'RECOVER' ? 'Account Recovery' : mode === 'VERIFY' ? 'Check your Street' : mode === 'RESET' ? 'New Identity' : 'Welcome Back'}
+                            </h2>
+                            <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mt-1">
+                                {mode === 'SIGNUP' ? 'Create your profile to start' : 'Enter your street keys'}
+                            </p>
                         </div>
 
-                        <div className="p-8 space-y-6">
+                        <div className="space-y-6">
                             {error && (
                                 <motion.div
                                     initial={{ height: 0, opacity: 0 }}

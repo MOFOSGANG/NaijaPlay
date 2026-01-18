@@ -8,7 +8,7 @@ const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || "" }
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
 
 interface GameState {
-  user: User;
+  user: User | null;
   currentView: AppView;
   activeGameId: GameType | null;
   activeRoom: GameRoom | null;
@@ -64,33 +64,10 @@ interface GameState {
 
 const INITIAL_STATS: GameStats = { wins: 0, losses: 0, highScore: 0, played: 0 };
 
-const MOCK_USER: User = {
-  id: 'guest-' + Math.random().toString(36).substr(2, 9),
-  username: 'Street-Pikin',
-  avatar: '👤',
-  title: CULTURAL_TITLES[0],
-  level: 1,
-  xp: 0,
-  coins: 1500,
-  friends: [],
-  achievements: [],
-  stats: {
-    NPAT: { ...INITIAL_STATS },
-    AFTER: { ...INITIAL_STATS },
-    SUWE: { ...INITIAL_STATS },
-    GARDEN: { ...INITIAL_STATS },
-    TINKO: { ...INITIAL_STATS },
-    CATCHER: { ...INITIAL_STATS }
-  },
-  activeTheme: 'classic',
-  inventory: ['classic_theme'],
-  bio: 'Compounding heritage one game at a time! 🔥',
-  loginStreak: 1,
-  hasCompletedOnboarding: false
-};
+// MOCK_USER removed to disable guest mode. Initial user is now null.
 
 export const useGameStore = create<GameState>((set, get) => ({
-  user: MOCK_USER,
+  user: null,
   currentView: 'LANDING',
   activeGameId: null,
   activeRoom: null,

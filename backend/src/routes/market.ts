@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { prisma } from '../server';
+import { prisma } from '../server.js';
 
 const router = Router();
 
@@ -8,7 +8,7 @@ router.post('/buy', async (req, res) => {
 
     try {
         // Start Atomic Transaction
-        const result = await prisma.$transaction(async (tx) => {
+        const result = await (prisma as any).$transaction(async (tx: any) => {
             // 1. Get user and item
             const user = await tx.user.findUnique({ where: { id: userId } });
             const item = await tx.shopItem.findUnique({ where: { id: itemId } });

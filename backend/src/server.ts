@@ -9,12 +9,12 @@ import pg from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit';
-import { setupGameEngine } from './sockets/gameEngine';
-import { setupMatchmaking } from './sockets/matchmaking';
-import { translateToPidgin } from './services/aiService';
+import { setupGameEngine } from './sockets/gameEngine.js';
+import { setupMatchmaking } from './sockets/matchmaking.js';
+import { translateToPidgin } from './services/aiService.js';
 import bcrypt from 'bcryptjs';
 
-import { validateEnv } from './utils/envValidator';
+import { validateEnv } from './utils/envValidator.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -30,7 +30,11 @@ const io = new Server(server, {
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
-const redisClient = createClient({ url: process.env.REDIS_URL });
+const redisUrl = process.env.REDIS_URL;
+if (!redisUrl) console.warn("⚠️ REDIS_URL no dey! Real-time features fit burst.");
+const redisClient = createClient({
+    url: redisUrl || 'redis://localhost:6379'
+});
 
 app.use(helmet());
 app.use(cors({
@@ -166,11 +170,12 @@ const startServer = async () => {
 
         const initAdmin = async () => {
             const adminEmail = 'Mofosgang123@gmail.com';
-            const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
+            const p = prisma as any;
+            const existingAdmin = await p.user.findUnique({ where: { email: adminEmail } });
             if (!existingAdmin) {
                 console.log("Setting up the Street Boss... 🕴️");
                 const hashedPassword = await bcrypt.hash('MOFOSGNG12$', 10);
-                await prisma.user.create({
+                await p.user.create({
                     data: {
                         username: 'MOFOSGANG',
                         email: adminEmail,

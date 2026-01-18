@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '../server.js';
-import { authMiddleware, AuthenticatedRequest } from '../middleware/auth.js';
+import { authMiddleware } from '../middleware/auth.js';
+import type { AuthenticatedRequest } from '../middleware/auth.js';
 import { refreshDailyQuests, claimQuestReward } from '../services/questService.js';
 
 const router = Router();
@@ -36,6 +37,7 @@ router.post('/:questId/claim', authMiddleware, async (req: AuthenticatedRequest,
     try {
         if (!req.userId) return res.status(401).json({ error: "Unauthorized" });
         const { questId } = req.params;
+        if (!questId || typeof questId !== 'string') throw new Error("Invalid Quest ID");
 
         const updatedQuest = await claimQuestReward(req.userId, questId);
         res.json({ message: "Reward claimed!", quest: updatedQuest });

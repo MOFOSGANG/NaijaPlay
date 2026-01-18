@@ -5,7 +5,8 @@ import {
   Settings as SettingsIcon, MessageCircle, Play, Users, ArrowLeft,
   Zap, Star, Shield, Music, Check, X, Send, Crown, Eye,
   Edit2, Construction, Sparkles, Volume2, Smartphone, Languages,
-  Home, MapPin, SkipForward, PlayCircle, PauseCircle, Laugh, Target
+  Home, MapPin, SkipForward, PlayCircle, PauseCircle, Laugh, Target,
+  LogOut, ShieldCheck, Search, Filter, Calendar, TrendingUp, ChevronRight
 } from 'lucide-react';
 
 import { useGameStore } from './store';
@@ -459,7 +460,7 @@ const MarketPage = () => {
 };
 
 const ProfilePage = () => {
-  const { user, updateProfile } = useGameStore();
+  const { user, updateProfile, logout } = useGameStore();
   const [isEditing, setIsEditing] = useState(false);
   const [editBio, setEditBio] = useState(user.bio || '');
   const [editUsername, setEditUsername] = useState(user.username);
@@ -533,14 +534,22 @@ const ProfilePage = () => {
             )}
           </div>
 
-          {/* Edit Button */}
-          <button
-            onClick={isEditing ? handleSave : () => setIsEditing(true)}
-            className={`p-4 rounded-2xl font-black text-xs uppercase flex items-center gap-2 transition-all ${isEditing ? 'bg-[#00ff88] text-black' : 'glass border border-white/10 hover:bg-white/10'
-              }`}
-          >
-            {isEditing ? <><Check size={16} /> Save</> : <><Edit2 size={16} /> Edit</>}
-          </button>
+          {/* Action Buttons */}
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={isEditing ? handleSave : () => setIsEditing(true)}
+              className={`p-4 rounded-2xl font-black text-xs uppercase flex items-center gap-2 transition-all ${isEditing ? 'bg-[#00ff88] text-black' : 'glass border border-white/10 hover:bg-white/10'
+                }`}
+            >
+              {isEditing ? <><Check size={16} /> Save</> : <><Edit2 size={16} /> Edit</>}
+            </button>
+            <button
+              onClick={() => logout()}
+              className="p-4 rounded-2xl font-black text-[10px] uppercase flex items-center gap-2 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all border border-red-500/10"
+            >
+              <LogOut size={16} /> Logout
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1048,21 +1057,26 @@ const BottomNav = () => {
 const AppContent = () => {
   const {
     currentView, isLoading, setView, user, updateProfile,
-    completeOnboarding, settings, updateSettings
+    completeOnboarding, settings, updateSettings, checkAuth, logout
   } = useGameStore();
   const { connect, isConnected, queue, leaveQueue, currentRoom, leaveRoom, joinRoom } = useMultiplayerStore();
   const [showCreateRoom, setShowCreateRoom] = useState(false);
   const [spectatingRoomId, setSpectatingRoomId] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { addToast } = useToasts();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  const isLoggedIn = user && !user.id.startsWith('guest-');
+
   useEffect(() => {
-    if (user && user.id) {
+    checkAuth();
+  }, []);
+
+  useEffect(() => {
+    if (user && user.id && !user.id.startsWith('guest-')) {
       connect(user.id);
     }
-  }, [user.id]);
+  }, [user.id, connect]);
 
   // Update Source when track changes
   useEffect(() => {
@@ -1225,7 +1239,6 @@ const AppContent = () => {
         onClose={() => setShowAuthModal(false)}
         onSuccess={(userData) => {
           updateProfile(userData);
-          setIsLoggedIn(true);
           setView('DASHBOARD');
         }}
       />

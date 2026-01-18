@@ -58,6 +58,8 @@ interface GameState {
   // Leaderboard Actions
   fetchLeaderboards: (type: 'USERS' | 'VILLAGES', region?: string) => Promise<void>;
   claimDailyReward: () => Promise<any>;
+  checkAuth: () => Promise<void>;
+  logout: () => void;
 }
 
 const INITIAL_STATS: GameStats = { wins: 0, losses: 0, highScore: 0, played: 0 };
@@ -423,5 +425,28 @@ export const useGameStore = create<GameState>((set, get) => ({
       console.error("Reward claim failed", e);
       return { claimed: false, message: "Street network slow! Try again later. 🏾" };
     }
+  },
+  checkAuth: async () => {
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/auth/me`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const userData = await res.json();
+        set({ user: userData });
+      } else {
+        localStorage.removeItem('auth_token');
+      }
+    } catch (e) {
+      console.error("CheckAuth burst:", e);
+    }
+  },
+  logout: () => {
+    localStorage.removeItem('auth_token');
+    // Reset to MOCK_USER or similar
+    window.location.reload(); // Quick way to reset all state
   }
 }));

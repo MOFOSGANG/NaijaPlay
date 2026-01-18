@@ -92,8 +92,12 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
                 const data = await res.json();
 
                 if (res.ok) {
-                    setMessage("Welcome! Login now.");
-                    setTimeout(() => setMode('LOGIN'), 1500);
+                    localStorage.setItem('auth_token', data.token);
+                    setMessage("Welcome to the Street! Oya... 🔥");
+                    setTimeout(() => {
+                        onSuccess(data.user);
+                        onClose();
+                    }, 1500);
                 } else {
                     setError(data.error || "Signup fail. Try different name.");
                 }

@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../server.js';
 import { z } from 'zod';
+import { authMiddleware } from '../middleware/auth.js';
+import type { AuthenticatedRequest } from '../middleware/auth.js';
 
 const registerSchema = z.object({
     username: z.string().min(3).max(20),
@@ -32,10 +34,14 @@ router.post('/register', async (req, res) => {
                 email: email.toLowerCase(),
                 password: hashedPassword,
                 title: "Street Pikin"
-            }
+            },
+            include: { inventory: true }
         });
 
-        res.json({ message: "Welcome to the Street! 🏃", userId: user.id });
+        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || 'secret');
+        const { password: _, ...userData } = user;
+
+        res.json({ message: "Welcome to the Street! 🏃", token, user: userData });
     } catch (error: any) {
         if (error.code === 'P2002') {
             const target = error.meta?.target || [];
@@ -79,11 +85,19 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// Basic recovery placeholder
-router.post('/recover', async (req, res) => {
-    const { email } = req.body;
-    // TODO: Send recovery link via email service
-    res.json({ message: "Check your email for recovery instructions! (Feature coming soon)" });
+// Token verification / Current user
+router.get('/me', authMiddleware, async (req: AuthenticatedRequest, res) => {
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: req.userId },
+            include: { inventory: true }
+        });
+        if (!user) return res.status(404).json({ error: "User no exist!" });
+        const { password: _, ...userData } = user;
+        res.json(userData);
+    } catch (error) {
+        res.status(500).json({ error: "Server error" });
+    }
 });
 
 export default router;

@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  username      String    @unique
+  email         String    @unique
+  password      String
+  avatar        String    @default("👤")
+  title         String    @default("Street Pikin")
+  level         Int       @default(1)
+  xp            Int       @default(0)
+  coins         Int       @default(500)
+  bio           String?   @default("Compounding heritage one game at a time! 🔥")
+  
+  village       Village?  @relation(fields: [villageId], references: [id])
+  villageId     String?
+
+  inventory     InventoryItem[]
+  matchHistory  Match[]  @relation("UserMatches")
+  
+  status        UserStatus @default(OFFLINE)
+  recoveryToken String?
+  recoveryExpires DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum UserStatus {
+  ONLINE
+  OFFLINE
+  IN_GAME
+}
+
+model Village {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  region      String   // Lagos, Abuja, etc.
+  icon        String   @default("🏡")
+  totalXP     Int      @default(0)
+  members     User[]
+  createdAt   DateTime @default(now())
+}
+
+model ShopItem {
+  id        String   @id @default(uuid())
+  name      String
+  category  String   // SKIN, OUTFIT, EMOTE, THEME
+  price     Int
+  icon      String
+  rarity    String   // COMMON, RARE, LEGENDARY
+  value     String?  // For themes (slug)
+  owners    InventoryItem[]
+}
+
+model InventoryItem {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  item       ShopItem @relation(fields: [itemId], references: [id])
+  itemId     String
+  acquiredAt DateTime @default(now())
+
+  @@unique([userId, itemId])
+}
+
+model Match {
+  id         String   @id @default(uuid())
+  gameType   String   // NPAT, AFTER, etc.
+  players    User[]   @relation("UserMatches")
+  winnerId   String?
+  score      Int      @default(0)
+  duration   Int      // in seconds
+  createdAt  DateTime @default(now())
+}

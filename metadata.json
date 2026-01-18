@@ -1,0 +1,8 @@
+{
+  "name": "Naija Play",
+  "description": "A vibrant multiplayer gaming platform digitalizing traditional Nigerian children's games like Ten Ten, Suwe, and Tinko Tinko with a modern, culturally authentic twist.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

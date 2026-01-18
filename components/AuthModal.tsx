@@ -21,7 +21,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
         setError(null);
         setMessage(null);
 
-        const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+        const API_URL = import.meta.env.VITE_BACKEND_URL || '';
 
         try {
             if (mode === 'RECOVER') {

@@ -5,7 +5,7 @@ import { XP_PER_LEVEL, DAILY_QUESTS, CULTURAL_TITLES } from './constants';
 import { GoogleGenAI } from "@google/genai";
 
 const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || "" });
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
 
 interface GameState {
   user: User;

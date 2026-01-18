@@ -44,7 +44,7 @@ export const GAMES_CONFIG = {
 };
 
 export const CULTURAL_TITLES = [
-  "New Recruit", "Street Pikin", "Senior Man", "Island Big Boy", "Compound Chief", "Naija Legend",
+  "Street Trainee", "Street Pikin", "Senior Man", "Island Big Boy", "Compound Chief", "Naija Legend",
   "Street Legend", "Agba Gamer", "I Too Know", "Compound Boss", "Street King", "Area Master"
 ];
 

@@ -1088,14 +1088,14 @@ const AppContent = () => {
   const { addToast } = useToasts();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const isLoggedIn = user && !user.id.startsWith('guest-');
+  const isLoggedIn = !!user;
 
   useEffect(() => {
     checkAuth();
   }, []);
 
   useEffect(() => {
-    if (user && user.id && !user.id.startsWith('guest-')) {
+    if (user && user.id) {
       connect(user.id);
     }
   }, [user?.id, connect]);

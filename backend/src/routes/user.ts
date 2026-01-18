@@ -18,6 +18,7 @@ router.post('/daily-reward', authMiddleware, async (req: AuthenticatedRequest, r
 
 router.get('/profile/:id', async (req, res) => {
     const { id } = req.params;
+    if (!id || typeof id !== 'string') return res.status(400).json({ error: "Invalid User ID" });
 
     try {
         const user = await prisma.user.findUnique({

@@ -15,8 +15,10 @@ router.get('/users/global', async (req, res) => {
 });
 
 router.get('/users/regional/:region', async (req, res) => {
+    const { region } = req.params;
+    if (!region || typeof region !== 'string') return res.status(400).json({ error: "Region required" });
     try {
-        const users = await leaderboardService.getRegionalUserLeaderboard(req.params.region);
+        const users = await leaderboardService.getRegionalUserLeaderboard(region);
         res.json(users);
     } catch (e: any) {
         res.status(500).json({ error: `Failed to load rankings for ${req.params.region}` });
@@ -35,8 +37,10 @@ router.get('/villages/global', async (req, res) => {
 });
 
 router.get('/villages/regional/:region', async (req, res) => {
+    const { region } = req.params;
+    if (!region || typeof region !== 'string') return res.status(400).json({ error: "Region required" });
     try {
-        const villages = await leaderboardService.getRegionalVillageLeaderboard(req.params.region);
+        const villages = await leaderboardService.getRegionalVillageLeaderboard(region);
         res.json(villages);
     } catch (e: any) {
         res.status(500).json({ error: `Failed to load village rankings for ${req.params.region}` });

@@ -1098,7 +1098,7 @@ const AppContent = () => {
     if (user && user.id && !user.id.startsWith('guest-')) {
       connect(user.id);
     }
-  }, [user.id, connect]);
+  }, [user?.id, connect]);
 
   // Force Landing if not logged in and trying to access protected views
   useEffect(() => {
@@ -1132,6 +1132,7 @@ const AppContent = () => {
   }, [settings.music]);
 
   useEffect(() => {
+    if (!user) return;
     const socket = connectSocket(user.id);
     socket.on('achievements_unlocked', (newUnlocks: any[]) => {
       newUnlocks.forEach(ach => {
@@ -1190,7 +1191,7 @@ const AppContent = () => {
       </AnimatePresence>
 
       <AnimatePresence>
-        {!user.hasCompletedOnboarding && currentView === 'DASHBOARD' && !isLoading && (
+        {user && !user.hasCompletedOnboarding && currentView === 'DASHBOARD' && !isLoading && (
           <StreetGuide onClose={() => completeOnboarding()} />
         )}
       </AnimatePresence>
@@ -1224,7 +1225,7 @@ const AppContent = () => {
             {currentView === 'LANDING' && <LandingPage isLoggedIn={isLoggedIn} setShowAuthModal={setShowAuthModal} />}
             {currentView === 'DASHBOARD' && <Dashboard onShowLobbies={() => setView('VILLAGES')} />}
             {currentView === 'PROFILE' && <ProfilePage />}
-            {currentView === 'MARKET' && <MarketPage />}
+            {currentView === 'MARKET' && <Market />}
             {currentView === 'SOCIAL' && <SocialHub />}
             {currentView === 'QUESTS' && (
               <div className="p-6 pb-32 max-w-2xl mx-auto space-y-6">

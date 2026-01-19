@@ -9,8 +9,6 @@ const ConnectionStatus = () => {
     const { isConnected, isConnecting, connectionError, reconnectAttempts, connect } = useMultiplayerStore();
     const [showBanner, setShowBanner] = useState(false);
 
-    if (!user) return null;
-
     useEffect(() => {
         // Show banner if disconnected for more than 2 seconds
         let timeout: ReturnType<typeof setTimeout>;
@@ -21,6 +19,9 @@ const ConnectionStatus = () => {
         }
         return () => clearTimeout(timeout);
     }, [isConnected, isConnecting]);
+
+    // Early return AFTER hooks - React Rules of Hooks requires hooks be called in same order every render
+    if (!user) return null;
 
     // Small indicator in corner
     const StatusIndicator = () => (

@@ -11,17 +11,16 @@ const SocialHub = () => {
         setActiveChat, user: currentUser
     } = useGameStore();
 
-    if (!currentUser) return null;
-
     const [tab, setTab] = useState<'FRIENDS' | 'REQUESTS' | 'FIND'>('FRIENDS');
     const [searchTerm, setSearchTerm] = useState('');
     const [msgText, setMsgText] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
+        if (!currentUser) return;
         fetchFriends();
         fetchRequests();
-    }, []);
+    }, [currentUser?.id]);
 
     useEffect(() => {
         if (social.activeChatId) {
@@ -38,6 +37,9 @@ const SocialHub = () => {
     useEffect(() => {
         scrollToBottom();
     }, [social.messages, social.activeChatId]);
+
+    // Early return AFTER ALL hooks - React Rules of Hooks requires consistent hook call order
+    if (!currentUser) return null;
 
     const handleSendRequest = async () => {
         if (!searchTerm.trim()) return;

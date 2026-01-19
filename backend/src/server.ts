@@ -135,6 +135,33 @@ app.get('/api/health', (req, res) => {
     res.json({ status: "Steady vibing! 🇳🇬", time: new Date() });
 });
 
+// Database connection diagnostic endpoint
+app.get('/api/db-health', async (req, res) => {
+    try {
+        // Test database connection with a simple query
+        const result = await prisma.$queryRaw`SELECT 1 as connected`;
+        const userCount = await prisma.user.count();
+        res.json({
+            database: "Connected ✅",
+            userCount,
+            time: new Date(),
+            env: {
+                hasDbUrl: !!process.env.DATABASE_URL,
+                hasJwtSecret: !!process.env.JWT_SECRET,
+                nodeEnv: process.env.NODE_ENV
+            }
+        });
+    } catch (error: any) {
+        console.error("DATABASE HEALTH CHECK FAILED:", error);
+        res.status(500).json({
+            database: "Disconnected ❌",
+            error: error.message,
+            code: error.code,
+            time: new Date()
+        });
+    }
+});
+
 // Serve Static Files in Production
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

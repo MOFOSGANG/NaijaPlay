@@ -29,9 +29,13 @@ COPY --from=frontend-builder /app/dist ./dist
 COPY --from=backend-builder /app/backend/dist ./backend/dist
 COPY --from=backend-builder /app/backend/node_modules ./backend/node_modules
 COPY --from=backend-builder /app/backend/package*.json ./backend/
+# Copy Prisma schema for runtime migrations
+COPY --from=backend-builder /app/backend/prisma ./backend/prisma
 
 EXPOSE 5000
 
 ENV NODE_ENV=production
 WORKDIR /app/backend
-CMD ["npm", "run", "start"]
+# Run migrations before starting the server
+CMD ["sh", "-c", "npx prisma migrate deploy && npm run start"]
+

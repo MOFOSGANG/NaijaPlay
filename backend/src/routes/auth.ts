@@ -59,8 +59,18 @@ router.post('/register', async (req, res) => {
             // Fallback for P2002 if target is unclear
             return res.status(400).json({ error: "Username or Email already dey in the street! 🏾" });
         }
-        console.error("REGISTER ERROR COMPLETE:", error);
-        res.status(500).json({ error: "Something burst for our end! Try again later. 🏾" });
+        console.error("===== REGISTER ERROR =====");
+        console.error("Error Name:", error.name);
+        console.error("Error Message:", error.message);
+        console.error("Error Code:", error.code);
+        console.error("Full Error:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+        console.error("==========================");
+
+        // Return more detail in non-production for debugging
+        const errorDetail = process.env.NODE_ENV !== 'production'
+            ? ` (${error.code || error.name}: ${error.message})`
+            : '';
+        res.status(500).json({ error: `Something burst for our end! Try again later. 🏾${errorDetail}` });
     }
 });
 
@@ -86,9 +96,18 @@ router.post('/login', async (req, res) => {
         // Return full user (minus password)
         const { password: _, ...userData } = user;
         res.json({ token, user: userData });
-    } catch (error) {
-        console.error("LOGIN ERROR:", error);
-        res.status(500).json({ error: "Login don hang!" });
+    } catch (error: any) {
+        console.error("===== LOGIN ERROR =====");
+        console.error("Error Name:", error.name);
+        console.error("Error Message:", error.message);
+        console.error("Error Code:", error.code);
+        console.error("Full Error:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+        console.error("=======================");
+
+        const errorDetail = process.env.NODE_ENV !== 'production'
+            ? ` (${error.code || error.name}: ${error.message})`
+            : '';
+        res.status(500).json({ error: `Login don hang!${errorDetail}` });
     }
 });
 

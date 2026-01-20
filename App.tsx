@@ -268,7 +268,10 @@ const Dashboard = ({ onShowLobbies }: { onShowLobbies?: () => void }) => {
                 <div className={`w-2 h-2 rounded-full mb-1 ${isConnected ? 'bg-[#00ff88] animate-pulse' : 'bg-red-500'}`} />
                 <span className="text-[8px] font-black uppercase text-white/40">{isConnected ? 'Online' : 'Offline'}</span>
               </div>
-              {/* Villages removed for future update */}
+              <button onClick={() => setView('VILLAGES')} className="glass p-4 rounded-3xl border border-white/5 hover:bg-white/10 transition-all flex flex-col items-center gap-1 min-w-[80px]">
+                <Users size={20} className="text-[#00ff88]" />
+                <span className="text-[9px] font-black uppercase">Lobbies</span>
+              </button>
               <button onClick={() => setView('MARKET')} className="glass p-4 rounded-3xl border border-white/5 hover:bg-white/10 transition-all flex flex-col items-center gap-1 min-w-[80px]">
                 <ShoppingBag size={20} className="text-[#FFA500]" />
                 <span className="text-[9px] font-black uppercase">Market</span>
@@ -366,9 +369,10 @@ const LandingPage = ({ isLoggedIn, setShowAuthModal }: { isLoggedIn: boolean; se
 
 const Market = () => {
   const { user, buyItem } = useGameStore();
-
-  if (!user) return null;
   const [activeCategory, setActiveCategory] = useState<'ALL' | 'SKIN' | 'OUTFIT' | 'EMOTE' | 'THEME'>('ALL');
+
+  // Early return AFTER hooks to comply with React Rules of Hooks
+  if (!user) return null;
 
   const filteredItems = SHOP_ITEMS.filter(item =>
     activeCategory === 'ALL' || item.category === activeCategory
@@ -485,6 +489,7 @@ const ProfilePage = () => {
   const [editBio, setEditBio] = useState(user?.bio || '');
   const [editUsername, setEditUsername] = useState(user?.username || '');
 
+  // Early return AFTER hooks to comply with React Rules of Hooks
   if (!user) return null;
 
   const totalGamesPlayed = Object.values(user.stats).reduce((acc, s) => acc + s.played, 0);

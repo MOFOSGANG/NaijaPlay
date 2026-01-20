@@ -8,6 +8,7 @@ interface QueuePlayer {
     gameType: string;
     stake: number;
     joinedAt: number;
+    level?: number; // For skill-based matching in future
 }
 
 // Queues grouped by gameType and then by stake
@@ -33,8 +34,8 @@ export const setupMatchmaking = (io: Server, redisClient: any = null) => {
         // userId from auth middleware (to be implemented)
         const userId = socket.handshake.auth?.userId;
 
-        socket.on('join_queue', (data: { gameType: string; stake: number }) => {
-            const { gameType, stake = 0 } = data;
+        socket.on('join_queue', (data: { gameType: string; stake: number; level?: number }) => {
+            const { gameType, stake = 0, level } = data;
 
             if (!queues[gameType]) {
                 queues[gameType] = {};
@@ -44,20 +45,46 @@ export const setupMatchmaking = (io: Server, redisClient: any = null) => {
             }
 
             // Prevent double queuing
-            if (isPlayerInAnyQueue(socket.id)) return;
+            if (isPlayerInAnyQueue(socket.id)) {
+                return socket.emit('queue_error', { message: 'You dey queue already!' });
+            }
 
             console.log(`Player ${socket.id} (User: ${userId}) joined ${gameType} queue with ${stake} stake. 💰`);
 
-            queues[gameType][stake].push({
+            const player: QueuePlayer = {
                 socketId: socket.id,
                 userId,
                 gameType,
                 stake,
-                joinedAt: Date.now()
+                joinedAt: Date.now(),
+                ...(level !== undefined && { level })
+            };
+
+            queues[gameType][stake].push(player);
+
+            // Send queue confirmation with estimated wait
+            const queueSize = queues[gameType][stake].length;
+            socket.emit('queue_joined', {
+                gameType,
+                stake,
+                position: queueSize,
+                estimatedWait: queueSize > 1 ? '< 1 min' : 'Searching...'
             });
 
             // Trigger match check
             checkMatches(io, gameType, stake);
+
+            // Set timeout for long waits (2 minutes)
+            setTimeout(() => {
+                if (isPlayerInQueue(socket.id, gameType, stake)) {
+                    socket.emit('queue_timeout', {
+                        message: 'No match found. Try again or lower stake!',
+                        gameType,
+                        stake
+                    });
+                    removePlayerFromAllQueues(socket.id);
+                }
+            }, 120000); // 2 minutes
         });
 
         socket.on('leave_queue', () => {
@@ -178,6 +205,11 @@ const isPlayerInAnyQueue = (socketId: string) => {
         }
     }
     return false;
+};
+
+const isPlayerInQueue = (socketId: string, gameType: string, stake: number) => {
+    const q = queues[gameType]?.[stake];
+    return q ? q.some((p: QueuePlayer) => p.socketId === socketId) : false;
 };
 
 const removePlayerFromAllQueues = (socketId: string) => {
